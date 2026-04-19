@@ -21,9 +21,9 @@ export const subjects: Subject[] = [
     icon: '🧪',
     color: 'chemistry',
     chapters: [
-      { id: 'organic', name: 'Organic Chemistry', questionCount: 40 },
-      { id: 'inorganic', name: 'Inorganic Chemistry', questionCount: 40 },
-      { id: 'physical', name: 'Physical Chemistry', questionCount: 40 },
+      { id: 'equilibrium', name: 'Equilibrium', questionCount: 40 },
+      { id: 'salt analysis', name: 'Salt Analysis', questionCount: 40 },
+      { id: 'general organic chemistry', name: 'General Organic Chemistry', questionCount: 40 },
       { id: 'coordination', name: 'Coordination Compounds', questionCount: 40 },
       { id: 'electrochemistry', name: 'Electrochemistry', questionCount: 40 },
       { id: 'polymers', name: 'Polymers & Biomolecules', questionCount: 40 },

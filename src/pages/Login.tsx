@@ -1,11 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LoginForm } from '@/components/LoginForm';
+import Snow from "@/components/Snow";
 
 const Login = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background elements */}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0B1220]">
+      <Snow />
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-3xl"
@@ -37,8 +38,6 @@ const Login = () => {
         <LoginForm />
       </div>
 
-      {/* Decorative grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
     </div>
   );
 };

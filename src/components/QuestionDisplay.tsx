@@ -51,7 +51,7 @@ export function QuestionDisplay({
             <div className="flex items-center gap-4">
               <div
                 className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                  w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold
                   ${
                     selectedAnswer === index
                       ? 'bg-primary text-primary-foreground'

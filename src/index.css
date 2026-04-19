@@ -1,4 +1,3 @@
-/* eslint-env browser */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,6 +5,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 
+body {
+  background: linear-gradient(to bottom, #0F172A, #0F314E);
+}
 
 
 @layer base {
@@ -40,13 +42,11 @@
 
     --radius: 0.75rem;
 
-    /* Subject Colors */
     --physics: 199 89% 48%;
     --chemistry: 160 84% 39%;
     --biology: 142 71% 45%;
     --maths: 270 60% 55%;
 
-    /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(250 40% 12%) 50%, hsl(199 50% 10%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(222 47% 12% / 0.8) 0%, hsl(222 47% 8% / 0.6) 100%);
     --gradient-physics: linear-gradient(135deg, hsl(199 89% 48% / 0.2) 0%, hsl(199 89% 48% / 0.05) 100%);
@@ -55,7 +55,6 @@
     --gradient-maths: linear-gradient(135deg, hsl(270 60% 55% / 0.2) 0%, hsl(270 60% 55% / 0.05) 100%);
     --gradient-button: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(270 60% 55%) 100%);
     
-    /* Shadows */
     --shadow-glow-primary: 0 0 40px hsl(199 89% 48% / 0.3);
     --shadow-glow-secondary: 0 0 40px hsl(270 60% 55% / 0.3);
     --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
@@ -143,4 +142,16 @@
   .backface-hidden {
     backface-visibility: hidden;
   }
+}
+.glass-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.glass-card::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+.glass-card::-webkit-scrollbar-track {
+  background: transparent;
 }

@@ -100,7 +100,6 @@ export function SubjectCard({ subject, onClick, index }: SubjectCardProps) {
           </div>
         </div>
         
-        {/* Background decoration */}
         <div className={`absolute inset-0 rounded-2xl opacity-20 bg-gradient-to-br from-current to-transparent ${iconColors[subject.color]}`} />
       </motion.div>
     </motion.div>

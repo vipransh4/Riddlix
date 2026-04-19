@@ -12,16 +12,16 @@ import QuizPage from "./pages/QuizPage";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import NotFound from "./pages/NotFound";
+import { RoomProvider } from "./context/RoomContext";
+import Signup from "./pages/Signup";
 
 const queryClient = new QueryClient();
 
-// Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 };
 
-// Redirect authenticated users from login
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>;
@@ -30,7 +30,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/Riddlix" element={<Navigate to="/" replace />} />
       <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/subject/:subjectId" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
       <Route path="/quiz/:subjectId/:chapterId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
@@ -43,23 +45,33 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <QuizProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}>
-              <AppRoutes />
-          </BrowserRouter>
+    <BrowserRouter
+      basename="/Riddlix"
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
 
-        </TooltipProvider>
-      </QuizProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <RoomProvider>
+          <QuizProvider>
+
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+
+              <AppRoutes />
+
+            </TooltipProvider>
+
+          </QuizProvider>
+        </RoomProvider>
+      </AuthProvider>
+
+    </BrowserRouter>
   </QueryClientProvider>
 );
+
 
 export default App;

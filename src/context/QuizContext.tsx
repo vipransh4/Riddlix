@@ -24,7 +24,7 @@ const QuizContext = createContext<QuizContextType | undefined>(undefined);
 const initialQuizState: QuizState = {
   currentQuestion: 0,
   answers: {},
-  timeRemaining: 2 * 60 * 60, // 2 hours in seconds
+  timeRemaining: 2 * 60 * 60, 
   isSubmitted: false,
 };
 

@@ -1,7 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { Clock, FileQuestion, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { useRoom } from "@/context/RoomContext";
+import { useAuth } from "@/context/AuthContext";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface QuizInstructionsProps {
   subject: string;
@@ -11,21 +15,28 @@ interface QuizInstructionsProps {
 }
 
 export function QuizInstructions({ subject, chapter, onAccept, onDecline }: QuizInstructionsProps) {
+    const { createRoom, joinRoom, room, startRoom } = useRoom();
+    const { user } = useAuth();
+    const [code, setCode] = useState("");
+    React.useEffect(() => {
+      if (room?.status === "started") {
+        onAccept();
+      }
+    }, [room?.status]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
     >
-      {/* Blurred background */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-md" />
       
-      {/* Instructions modal */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="relative glass-card rounded-2xl p-8 max-w-2xl w-full glow-primary"
+        className="relative glass-card rounded-2xl p-8 max-w-2xl w-full glow-primary max-h-[90vh] overflow-y-auto"
       >
         <div className="text-center mb-8">
           <h2 className="text-3xl font-display font-bold text-foreground mb-2">
@@ -55,6 +66,59 @@ export function QuizInstructions({ subject, chapter, onAccept, onDecline }: Quiz
         </div>
 
         <div className="space-y-4 mb-8">
+          <div className="mt-6 mb-8 p-4 border border-border rounded-xl bg-card">
+            <h3 className="font-semibold mb-2">Multiplayer (Optional)</h3>
+
+            <div className="flex gap-2 mb-3">
+              <Button
+                onClick={() => {
+                  const c = createRoom(`${subject}-${chapter}`, user!.email);
+                  setCode(c);
+                }}
+              >
+                Create Room
+              </Button>
+
+              <Input
+                placeholder="Room Code"
+                value={code}
+                disabled={room?.hostEmail === user?.email}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+              />
+
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (code) navigator.clipboard.writeText(code);
+                }}
+              >
+                Copy
+              </Button>
+
+              <Button
+                variant="outline"
+                disabled={room?.hostEmail === user?.email}
+                onClick={() => {
+                  const ok = joinRoom(code, user!.email);
+                  if (!ok) alert("Invalid code");
+                }}
+              >
+                {room?.hostEmail === user?.email ? "You are Host" : "Join"}
+              </Button>
+
+            </div>
+
+
+            {room && (
+              <div className="text-sm">
+                <p className="font-medium">Players in Room:</p>
+                {room.players.map(p => (
+                  <p key={p.email}>{p.email}</p>
+                ))}
+              </div>
+            )}
+          </div>
           <h3 className="text-lg font-semibold text-foreground">Rules & Guidelines:</h3>
           <ul className="space-y-3">
             {[
@@ -89,9 +153,15 @@ export function QuizInstructions({ subject, chapter, onAccept, onDecline }: Quiz
             Go Back
           </Button>
           <Button
-            onClick={onAccept}
+            onClick={() => {
+              if (room?.hostEmail === user?.email) {
+                startRoom();
+              }
+              onAccept();
+            }}
             className="flex-1 h-12 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
           >
+
             <CheckCircle className="w-5 h-5 mr-2" />
             Start Quiz
           </Button>

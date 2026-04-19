@@ -18,14 +18,19 @@ export function QuestionNavigation({
     const questionId = index + 1;
     if (currentQuestion === index) return 'current';
     if (answeredQuestions[questionId] !== undefined) return 'answered';
+    if (index < currentQuestion && answeredQuestions[questionId] === undefined)
+      return 'skipped';
     return 'unanswered';
   };
 
+
   const statusClasses = {
     current: 'bg-primary text-primary-foreground border-primary',
-    answered: 'bg-accent/20 text-accent border-accent/50',
+    answered: 'bg-green-600 text-white border-green-700',
+    skipped: 'bg-red-600 text-white border-red-700',
     unanswered: 'bg-muted/50 text-muted-foreground border-border hover:border-primary/50',
   };
+
 
   return (
     <div className="glass-card rounded-xl p-4">
@@ -58,9 +63,14 @@ export function QuestionNavigation({
           <span className="text-muted-foreground">Current</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <div className="w-4 h-4 rounded bg-accent/20 border border-accent/50" />
+        <div className="w-4 h-4 rounded bg-green-600 border border-green-700" />
           <span className="text-muted-foreground">Answered</span>
         </div>
+        <div className="flex items-center gap-2 text-sm">
+          <div className="w-4 h-4 rounded bg-red-600 border border-red-700" />
+          <span className="text-muted-foreground">Skipped</span>
+        </div>
+
         <div className="flex items-center gap-2 text-sm">
           <div className="w-4 h-4 rounded bg-muted/50 border border-border" />
           <span className="text-muted-foreground">Unanswered</span>

@@ -43,10 +43,23 @@ export interface QuizResult {
   subject: string;
   chapter: string;
   score: number;
+  total: number;
+  email: string;
   totalQuestions: number;
   timeTaken: number;
   completedAt: Date;
   badge?: Badge;
+  isMultiplayer?: boolean;
+  roomCode?: string;
+  rank?: number;
+  players?: {
+    email: string;
+    score: number;
+    accuracy: number;
+    time: number;
+  }[];
+  answers?: { [key: number]: number };
+  questions?: Question[];
 }
 
 export interface QuizState {

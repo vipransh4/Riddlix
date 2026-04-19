@@ -40,7 +40,6 @@ const SubjectPage = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
-      {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className={`absolute top-1/4 left-1/4 w-96 h-96 rounded-full ${bgClasses[subject.color]} blur-3xl`}
@@ -61,7 +60,6 @@ const SubjectPage = () => {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -98,7 +96,6 @@ const SubjectPage = () => {
           </div>
         </motion.div>
 
-        {/* Chapters Grid */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -121,7 +118,6 @@ const SubjectPage = () => {
         </motion.div>
       </div>
 
-      {/* Decorative grid */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
     </div>
   );

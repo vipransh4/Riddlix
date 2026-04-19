@@ -13,35 +13,55 @@ interface QuizResultsProps {
   subject: string;
   chapter: string;
   onRetry: () => void;
+  onReview?: () => void;
 }
 
-export function QuizResults({
+export const QuizResults = ({
   score,
   totalQuestions,
   timeTaken,
   subject,
   chapter,
   onRetry,
-}: QuizResultsProps) {
+  onReview,
+}: QuizResultsProps) => {
   const navigate = useNavigate();
-  const { addQuizResult, addBadge } = useAuth();
+  const { addQuizResult, addBadge, user } = useAuth();
   const percentage = Math.round((score / totalQuestions) * 100);
+  
   const badge = getBadgeForScore(score, totalQuestions);
 
   React.useEffect(() => {
-    // Save quiz result
-    addQuizResult({
+    if (!user) return;
+
+    const resultData = {
       id: Date.now().toString(),
       subject,
       chapter,
       score,
+      total: totalQuestions,
+      email: user.email,
       totalQuestions,
       timeTaken,
       completedAt: new Date(),
-      badge,
-    });
-    addBadge(badge);
-  }, []);
+      badge: badge, 
+    };
+
+    addQuizResult(resultData);
+    
+    const userBadge = {
+      id: `badge_${Date.now()}`,
+      name: badge.name,
+      icon: badge.icon,
+      description: `Scored ${percentage}% in ${chapter} (${subject})`,
+      earnedAt: new Date(),
+    };
+    
+    addBadge(userBadge);
+    localStorage.removeItem("rooms");
+    localStorage.removeItem("currentRoom");
+    sessionStorage.clear();
+  }, []); 
 
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -73,7 +93,6 @@ export function QuizResults({
           {subject} - {chapter}
         </p>
 
-        {/* Score Circle */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -105,7 +124,6 @@ export function QuizResults({
           </div>
         </motion.div>
 
-        {/* Badge */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -116,7 +134,6 @@ export function QuizResults({
           <BadgeDisplay badge={badge} size="lg" />
         </motion.div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="glass-card rounded-xl p-4">
             <CheckCircle className="w-6 h-6 text-accent mx-auto mb-2" />
@@ -134,25 +151,41 @@ export function QuizResults({
           Time taken: {formatTime(7200 - timeTaken)}
         </p>
 
-        {/* Actions */}
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-3">
           <Button
-            onClick={() => navigate('/dashboard')}
-            variant="outline"
-            className="flex-1 h-12 border-border hover:bg-muted"
+            onClick={() => onReview && onReview()}
+            className="h-12 bg-gradient-to-r from-primary to-secondary"
           >
-            <Home className="w-5 h-5 mr-2" />
-            Dashboard
+            Review Answers
           </Button>
-          <Button
-            onClick={onRetry}
-            className="flex-1 h-12 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-          >
-            <RotateCcw className="w-5 h-5 mr-2" />
-            Try Again
-          </Button>
+
+          <div className="flex gap-4">
+            <Button
+                onClick={() => {
+                  localStorage.removeItem("rooms");
+                  localStorage.removeItem("currentRoom");
+                  sessionStorage.clear();
+                  navigate('/dashboard');
+                }}
+                variant="outline"
+                className="flex-1 h-12"
+              >Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                localStorage.removeItem("rooms");
+                localStorage.removeItem("currentRoom");
+                sessionStorage.clear();
+                onRetry();
+              }}
+              className="flex-1 h-12"
+            >
+              <RotateCcw className="w-5 h-5 mr-2" />
+              Try Again
+            </Button>
+          </div>
         </div>
       </div>
     </motion.div>
   );
-}
+};

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Link} from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, Lock, LogIn, Sparkles } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
+import logo from "/favicon.ico";
+
+
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -40,7 +43,7 @@ export function LoginForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       className="w-full max-w-md"
-    >
+      >
       <div className="glass-card rounded-2xl p-8 glow-primary">
         <div className="text-center mb-8">
           <motion.div
@@ -49,13 +52,14 @@ export function LoginForm() {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-4"
           >
-            <Sparkles className="w-8 h-8 text-primary" />
+            <img src={logo} className="w-16 h-16" />
+
           </motion.div>
           <h1 className="text-3xl font-display font-bold text-foreground mb-2">
             Welcome Back
           </h1>
           <p className="text-muted-foreground">
-            Sign in to continue your JEE journey
+            Learn at your pace. Improve every day.
           </p>
         </div>
 
@@ -72,7 +76,7 @@ export function LoginForm() {
                 placeholder="student@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-muted/50 border-border focus:border-primary"
+                className="pl-10 bg-muted/50 border-border focus:border-primary text-black"
                 required
               />
             </div>
@@ -90,7 +94,7 @@ export function LoginForm() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 bg-muted/50 border-border focus:border-primary"
+                className="pl-10 bg-muted/50 border-border focus:border-primary text-black"
                 required
               />
             </div>
@@ -125,12 +129,11 @@ export function LoginForm() {
             )}
           </Button>
         </form>
-
-        <p className="text-center text-muted-foreground mt-6 text-sm">
-          New here?{' '}
-          <span className="text-primary cursor-pointer hover:underline">
-            Create an account
-          </span>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-primary font-semibold hover:underline">
+            Sign up
+          </Link>
         </p>
       </div>
     </motion.div>

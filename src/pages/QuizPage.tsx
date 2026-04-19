@@ -4,13 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { subjects } from '@/data/subjects';
 import { getQuestions } from '@/data/questions';
 import { Question } from '@/types/quiz';
+
 import { QuizInstructions } from '@/components/QuizInstructions';
 import { Timer } from '@/components/Timer';
 import { QuestionNavigation } from '@/components/QuestionNavigation';
 import { QuestionDisplay } from '@/components/QuestionDisplay';
 import { QuizResults } from '@/components/QuizResults';
+import QuizReview from "@/components/QuizReview";
+import { QuizResult } from '@/types/quiz';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Send, AlertTriangle } from 'lucide-react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,19 +26,37 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { useRoom } from "@/context/RoomContext";
+import { useAuth } from "@/context/AuthContext";
+import RoomResults from "@/components/RoomResults";
+let roomCtx;
+try {
+  roomCtx = useRoom();
+} catch (e) {
+  console.log("RoomProvider not ready");
+}
+
+const submitResult = roomCtx?.submitResult;
+const room = roomCtx?.room;
+
 const QuizPage = () => {
   const { subjectId, chapterId } = useParams<{ subjectId: string; chapterId: string }>();
   const navigate = useNavigate();
-  
+
+const { submitResult, room, leaveRoom } = useRoom();
+  const { user, addQuizResult } = useAuth();
+
   const [showInstructions, setShowInstructions] = useState(true);
   const [quizStarted, setQuizStarted] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
   const [timeRemaining, setTimeRemaining] = useState(7200);
+
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
 
   const subject = subjects.find(s => s.id === subjectId);
   const chapter = subject?.chapters.find(c => c.id === chapterId);
@@ -53,6 +75,9 @@ const QuizPage = () => {
       </div>
     );
   }
+useEffect(() => {
+  leaveRoom();
+}, [subjectId, chapterId]);
 
   const handleAcceptInstructions = () => {
     setShowInstructions(false);
@@ -87,16 +112,7 @@ const QuizPage = () => {
     setCurrentQuestion(index);
   };
 
-  const handleSubmitQuiz = () => {
-    let correctCount = 0;
-    questions.forEach(question => {
-      if (answers[question.id] === question.correctAnswer) {
-        correctCount++;
-      }
-    });
-    setScore(correctCount);
-    setShowResults(true);
-  };
+  
 
   const handleTimeUp = () => {
     handleSubmitQuiz();
@@ -112,18 +128,83 @@ const QuizPage = () => {
     setScore(0);
   };
 
-  if (showResults) {
+const handleSubmitQuiz = () => {
+  let correctCount = 0;
+
+  questions.forEach(q => {
+    if (answers[q.id] === q.correctAnswer) {
+      correctCount++;
+    }
+  });
+
+  setScore(correctCount);
+  setShowResults(true);
+
+  const baseResultData: QuizResult = {
+    id: Date.now().toString(),
+    subject: subject.name,
+    chapter: chapter.name,
+    score: correctCount,
+    total: questions.length,
+    email: user?.email || '',
+    totalQuestions: questions.length,
+    timeTaken: 7200 - timeRemaining,
+    completedAt: new Date(),
+    isMultiplayer: !!room,
+    roomCode: room?.code,
+  };
+
+  if (room && user) {
+    const multiplayerResultData: QuizResult = {
+      ...baseResultData,
+      players: room.players.map(p => ({
+        email: p.email,
+        score: p.result?.score || 0,
+        accuracy: Math.round(
+          ((p.result?.score || 0) / questions.length) * 100
+        ),
+        time: p.result?.timeTaken || 0,
+      }))
+    };
+    
+    submitResult(user.email, multiplayerResultData);
+    addQuizResult(multiplayerResultData);
+  } else if (user) {
+    addQuizResult(baseResultData);
+  }
+};
+
+if (reviewMode) {
+  return (
+    <QuizReview
+      questions={questions}
+      answers={answers}
+      onExit={() => setReviewMode(false)}
+    />
+  );
+}
+
+if (showResults) {
+  if (room) {
     return (
-      <QuizResults
-        score={score}
-        totalQuestions={questions.length}
-        timeTaken={timeRemaining}
-        subject={subject.name}
-        chapter={chapter.name}
-        onRetry={handleRetry}
+      <RoomResults
+        onExit={() => navigate("/dashboard")}
       />
     );
   }
+
+  return (
+    <QuizResults
+      score={score}
+      totalQuestions={questions.length}
+      timeTaken={timeRemaining}
+      subject={subject.name}
+      chapter={chapter.name}
+      onRetry={handleRetry}
+      onReview={() => setReviewMode(true)}
+    />
+  );
+}
 
   if (showInstructions) {
     return (
@@ -140,11 +221,9 @@ const QuizPage = () => {
 
   return (
     <div className="min-h-screen p-4 lg:p-6 relative">
-      {/* Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-muted/20 -z-10" />
 
       <div className="max-w-7xl mx-auto">
-        {/* Header with Timer */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,6 +235,7 @@ const QuizPage = () => {
             </h1>
             <p className="text-muted-foreground">{subject.name}</p>
           </div>
+
           <Timer
             initialTime={7200}
             onTimeUp={handleTimeUp}
@@ -163,9 +243,7 @@ const QuizPage = () => {
           />
         </motion.div>
 
-        {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Question Navigation (Left Sidebar) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -179,7 +257,6 @@ const QuizPage = () => {
             />
           </motion.div>
 
-          {/* Question Display */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -197,28 +274,22 @@ const QuizPage = () => {
               )}
             </AnimatePresence>
 
-            {/* Navigation Buttons */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-wrap gap-4 mt-6"
-            >
+            <motion.div className="flex flex-wrap gap-4 mt-6">
               <Button
                 onClick={handlePreviousQuestion}
                 disabled={currentQuestion === 0}
                 variant="outline"
-                className="flex-1 md:flex-none h-12 border-border hover:bg-muted disabled:opacity-50"
+                className="flex-1 md:flex-none h-12"
               >
                 <ChevronLeft className="w-5 h-5 mr-2" />
                 Previous
               </Button>
-              
+
               <Button
                 onClick={handleNextQuestion}
                 disabled={currentQuestion === questions.length - 1}
                 variant="outline"
-                className="flex-1 md:flex-none h-12 border-border hover:bg-muted disabled:opacity-50"
+                className="flex-1 md:flex-none h-12"
               >
                 Next
                 <ChevronRight className="w-5 h-5 ml-2" />
@@ -226,7 +297,7 @@ const QuizPage = () => {
 
               <Button
                 onClick={() => setShowSubmitDialog(true)}
-                className="flex-1 md:flex-none h-12 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                className="flex-1 md:flex-none h-12 bg-gradient-to-r from-primary to-secondary"
               >
                 <Send className="w-5 h-5 mr-2" />
                 Submit Quiz
@@ -236,31 +307,18 @@ const QuizPage = () => {
         </div>
       </div>
 
-      {/* Submit Confirmation Dialog */}
       <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-        <AlertDialogContent className="glass-card border-border">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-foreground">
-              <AlertTriangle className="w-5 h-5 text-primary" />
-              Submit Quiz?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
+            <AlertDialogTitle>Submit Quiz?</AlertDialogTitle>
+            <AlertDialogDescription>
               You have answered {Object.keys(answers).length} out of {questions.length} questions.
-              {Object.keys(answers).length < questions.length && (
-                <span className="block mt-2 text-destructive">
-                  Warning: You have {questions.length - Object.keys(answers).length} unanswered questions!
-                </span>
-              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-border hover:bg-muted">
-              Continue Quiz
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSubmitQuiz}
-              className="bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-            >
+            <AlertDialogCancel>Continue Quiz</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubmitQuiz}>
               Submit
             </AlertDialogAction>
           </AlertDialogFooter>
